@@ -1,0 +1,37 @@
+export TURTLEBOT3_MODEL=burger
+
+1月21日
+修改robot_gui.js实现joystick控制gazebo中模型
+
+1月25日
+修改了/scripts/install-js-packages.sh，打开看看注释
+开着仿真，即可即时修改
+修改了rosbridge.launch
+
+1月26日
+在main.html中添加了3D模型显示
+Chrome跨域许可
+
+1月27日
+修改了turtlebot3_empty_world.launch，model设置为burger
+重新安装了apache2,将turtlebo3_description放在了/var/www/html/目录下
+实现了在网页中显示urdf 3D模型
+https://answers.ros.org/question/333795/error-when-loading-a-mesh-with-ros3djs/
+https://github.com/RobotWebTools/ros3djs/issues/269
+https://my.oschina.net/alphazou/blog/3099905
+
+1月29日
+修改了robot_gui.html, robot_gui.js, main.html
+改善了界面
+
+2月5日
+网页端无法显示机械臂模型，原因未知
+
+2月19日
+将 turtlebot3_manipulation_gazebo.launch 中"paused"的值修改为false，成功显示模型
+
+2月20日
+命令 rostopic pub -1 /joint_states sensor_msgs/JointState '{header: auto, name: ['gripper', 'gripper_sub','joint1', 'joint2', 'joint3','joint4'], position: [0, 0, 1, 0, 0, 0], velocity: [0,0,0.05,0,0,0], effort: []}' 只作用于网页端模型，不作用于gazebo及rviz，解决方案未知
+
+2月22日
+注释掉了 joint_state_publisher 节点避免模型抽搐，原因未知

@@ -61,7 +61,7 @@ var ros;
 // Configurable options
 var options = {
     // Speed parameters
-    cmdVelTopic: '/cmd_vel_mux/input/teleop',
+    cmdVelTopic: '/cmd_vel',
     defaultLinearSpeed: 0.18,
     defaultAngularSpeed: 1.2,
     maxLinearSpeed: 0.18,
@@ -73,10 +73,10 @@ var options = {
     deadZoneVz: 0.2,
 
     // Battery topics
-    laptopBatteryTopic: '/laptop_charge',
+    //laptopBatteryTopic: '/laptop_charge',
 
     // Use this topic for the fake battery
-    robotBatteryTopic: '/battery_level',
+    //robotBatteryTopic: '/battery_level',
 
     // Use a topic like this for a real battery
     //robotBatteryTopic: '/arduino/sensor/main_voltage',
@@ -128,114 +128,114 @@ function init_ros() {
     var windowHeight = this.window.innerHeight;
 
     // Set the video width to 60% of the window width and scale the height
-	// appropriately.
-    videoWidth = Math.round(0.6 * windowWidth);
+    // appropriately.
+    videoWidth = Math.round(0.5 * windowWidth);
     videoHeight = Math.round(videoWidth * 240 / 320);
     videoStageWidth = videoWidth * videoScale;
     videoStageHeight = videoHeight * videoScale;
 }
 
 // If there is an error on the backend, an 'error' emit will be emitted.
-ros.on('error', function(event) {
+ros.on('error', function (event) {
     console.log("Error connecting to ROS Bridge. Check to make sure you have launched the rosbridge server.");
 });
 
 // Wait until a connection is made before continuing
-ros.on('connection', function() {
+ros.on('connection', function () {
     console.log('Rosbridge connected.');
 
     // Create the video viewer.
     videoViewer = new MJPEGCANVAS.Viewer({
-	divID : 'videoCanvas',
-	host : mjpegHost,
-	port: mjpegPort,
-	width : videoStageWidth,
-	height : videoStageHeight,
-	quality: options['videoQuality'],
-	topic : options['videoTopic']
+        divID: 'videoCanvas',
+        host: mjpegHost,
+        port: mjpegPort,
+        width: 600,     //videoStageWidth,
+        height: 425,    //videoStageHeight,
+        quality: options['videoQuality'],
+        topic: options['videoTopic']
     });
 
     // Create the main Navigation viewer.
     var navViewer = new ROS2D.Viewer({
-	divID : 'navCanvas',
-	width : 500,
-	height : 500
+        divID: 'navCanvas',
+        width: 500,
+        height: 500
     });
- 
+
     // Setup the Navigation client.
     var navGridClient = new NAV2D.OccupancyGridClientNav({
-	ros : ros,
-	rootObject : navViewer.scene,
-	viewer : navViewer,
-	withOrientation: true,
-	serverName : '/move_base'
+        ros: ros,
+        rootObject: navViewer.scene,
+        viewer: navViewer,
+        withOrientation: true,
+        serverName: '/move_base'
     });
 
     // Create a Param object for the max linear speed
     var maxLinearSpeedParam = new ROSLIB.Param({
-	ros : ros,
-	name : param_ns + '/maxLinearSpeed'
+        ros: ros,
+        name: param_ns + '/maxLinearSpeed'
     });
 
     // Get the value of the max linear speed paramater
-    maxLinearSpeedParam.get(function(value) {
-	if (value != null) {
-	    maxLinearSpeed = value;
-	    
-	    // Update the value on the GUI
-	    var element = document.getElementById('maxLinearSpeed');
-	    element.setAttribute("max", maxLinearSpeed);
-	    element.setAttribute("value", options['defaultLinearSpeed']);
-	}
+    maxLinearSpeedParam.get(function (value) {
+        if (value != null) {
+            maxLinearSpeed = value;
+
+            // Update the value on the GUI
+            var element = document.getElementById('maxLinearSpeed');
+            element.setAttribute("max", maxLinearSpeed);
+            element.setAttribute("value", options['defaultLinearSpeed']);
+        }
     });
 
     // Create a Param object for the max angular speed
     var maxAngularSpeedParam = new ROSLIB.Param({
-	ros : ros,
-	name : param_ns + '/maxAngularSpeed'
+        ros: ros,
+        name: param_ns + '/maxAngularSpeed'
     });
 
     // Get the value of the max angular speed paramater
-    maxAngularSpeedParam.get(function(value) {
-	if (value != null) {
-	    maxAngularSpeed = value;
-	    
-	    // Update the value on the GUI
-	    var element = document.getElementById('maxAngularSpeed');
-	    element.setAttribute("max", maxAngularSpeed);
-	    element.setAttribute("value", options['defaultAngularSpeed']);
-	}
+    maxAngularSpeedParam.get(function (value) {
+        if (value != null) {
+            maxAngularSpeed = value;
+
+            // Update the value on the GUI
+            var element = document.getElementById('maxAngularSpeed');
+            element.setAttribute("max", maxAngularSpeed);
+            element.setAttribute("value", options['defaultAngularSpeed']);
+        }
     });
 
     deleteParamService = new ROSLIB.Service({
-		ros : ros,
-		name : '/rosapi/delete_param',
-		serviceType : 'rosapi/DeleteParam'
+        ros: ros,
+        name: '/rosapi/delete_param',
+        serviceType: 'rosapi/DeleteParam'
     });
 
     getParamService = new ROSLIB.Service({
-		ros : ros,
-		name : '/rosapi/get_param',
-		serviceType : 'rosapi/GetParam'
+        ros: ros,
+        name: '/rosapi/get_param',
+        serviceType: 'rosapi/GetParam'
     });
-    
+
     setParamService = new ROSLIB.Service({
-		ros : ros,
-		name : '/rosapi/set_param',
-		serviceType : 'rosapi/SetParam'
+        ros: ros,
+        name: '/rosapi/set_param',
+        serviceType: 'rosapi/SetParam'
     });
 
     document.addEventListener('keydown', function (e) {
-		if (e.shiftKey) shiftKey = true;
-		else shiftKey = false;
-		setSpeed(e.keyCode);
+        if (e.shiftKey) shiftKey = true;
+        else shiftKey = false;
+        setSpeed(e.keyCode);
     }, true);
 
     document.addEventListener('keyup', function (e) {
-	if (!e.shiftKey) {
-	    shiftKey = false;
-	    stopRobot();
-	}
+        if (!e.shiftKey) {
+            shiftKey = false;
+            stopRobot();
+        }
     }, true);
 
     // Start subscribers
@@ -247,7 +247,7 @@ ros.on('connection', function() {
 
 function connectDisconnect() {
     var connect = document.getElementById('connectROS').checked;
-    
+
     if (connect) connectServer();
     else disconnectServer();
 }
@@ -264,11 +264,11 @@ function connectServer() {
     serverURL = "ws://" + rosbridgeHost + ":" + rosbridgePort;
     videoViewer.changeStream(options['videoTopic']);
     try {
-	ros.connect(serverURL);
-	console.log("Connected to ROS.");
+        ros.connect(serverURL);
+        console.log("Connected to ROS.");
     }
-    catch(error) {
-	console.write(error);
+    catch (error) {
+        console.write(error);
     }
 }
 
@@ -276,65 +276,103 @@ function startSubscribers() {
     // Subscribe to the robot battery topic
 
     // Use for fake battery level published on /battery_level
+    /*
     var subRobotBattery = new ROSLIB.Topic({
-	ros : ros,
-	name : options['robotBatteryTopic'],
-	messageType: 'std_msgs/Float32',
-	throttle_rate: 5000 // milliseconds
-    });
-	 
-    subRobotBattery.subscribe(function(msg) {
-	var color =	getBatteryColor(msg.data);
-	$("#robotBatteryGauge").jqxLinearGauge({
-	    value: msg.data,
-	    pointer: {size: '20%', style: {fill: color}}});
+        ros: ros,
+        name: options['robotBatteryTopic'],
+        messageType: 'std_msgs/Float32',
+        throttle_rate: 5000 // milliseconds
     });
 
-/*
+    subRobotBattery.subscribe(function (msg) {
+        var color = getBatteryColor(msg.data);
+        $("#robotBatteryGauge").jqxLinearGauge({
+            value: msg.data,
+            pointer: { size: '20%', style: { fill: color } }
+        });
+    });
+    */
+
+
     // Use for Phidgets battery sensor
+    /*
     var subRobotBattery = new ROSLIB.Topic({
-	ros : ros,
-	name : options['robotBatteryTopic'],
-	messageType: 'ros_arduino_bridge/AnalogFloat64',
-	throttle_rate: 5000 // milliseconds
+        ros: ros,
+        name: options['robotBatteryTopic'],
+        messageType: 'ros_arduino_bridge/AnalogFloat64',
+        throttle_rate: 5000 // milliseconds
     });
 
-    subRobotBattery.subscribe(function(msg) {
-	var voltage = msg.value;
-	var percentage  = 100 * (voltage - 12.5) / (14.0 - 12.5);
-	var color = getBatteryColor(percentage);
-	$("#robotBatteryGauge").jqxLinearGauge({value: percentage, pointer: {size: '20%', style: {fill: color}}});
+    subRobotBattery.subscribe(function (msg) {
+        var voltage = msg.value;
+        var percentage = 100 * (voltage - 12.5) / (14.0 - 12.5);
+        var color = getBatteryColor(percentage);
+        $("#robotBatteryGauge").jqxLinearGauge({ value: percentage, pointer: { size: '20%', style: { fill: color } } });
     });
-*/
+    */
 
+    /*
     console.log('Subscribed to ' + options['robotBatteryTopic']);
 
     // Subscribe to the laptop battery topic
     var subLaptopBattery = new ROSLIB.Topic({
-	ros : ros,
-	name : options['laptopBatteryTopic'],
-	messageType: 'linux_hardware/LaptopChargeStatus',
-	throttle_rate: 5000 // milliseconds
+        ros: ros,
+        name: options['laptopBatteryTopic'],
+        messageType: 'linux_hardware/LaptopChargeStatus',
+        throttle_rate: 5000 // milliseconds
     });
 
-    subLaptopBattery.subscribe(function(msg) {
-	var color = getBatteryColor(msg.percentage);
-	$("#laptopBatteryGauge").jqxLinearGauge({value: msg.percentage, pointer: { size: '20%', style: {fill: color}}});
+    subLaptopBattery.subscribe(function (msg) {
+        var color = getBatteryColor(msg.percentage);
+        $("#laptopBatteryGauge").jqxLinearGauge({ value: msg.percentage, pointer: { size: '20%', style: { fill: color } } });
     });
 
     console.log('Subscribed to ' + options['laptopBatteryTopic']);
+    */
 }
 
+/*
 function getBatteryColor(value) {
     if (value >= 0 && value <= 30) return '#FF0000';
     if (value > 30 && value <= 50) return '#FFFF00';
     if (value > 50) return '#00FF00';
 }
+*/
+
+//Did not realise
+/*var jointStatePub=new ROSLIB.Topic({
+    ros:ros,
+    name:'/joint_states',
+    messageType:'sensor_msgs/JointState'
+});
+
+function pubJointState(){
+    var jointStateMsg = new ROSLIB.Message({
+        header: {
+            seq: 0,
+            stamp: 0,
+            frame_id: fixed_frame
+        },
+        name:[
+            'gripper',
+            'gripper_sub',
+            'joint1',
+            'joint2',
+            'joint3',
+            'joint4'
+        ],
+        position:[0,0,1,0,0,0],
+        velocity:[0.5,0.5,0.5,0.5,0.5,0.5],
+        effort:[]
+    });
+
+    jointStatePub.publish(jointStateMsg);
+}*/
 
 var cmdVelPub = new ROSLIB.Topic({
-    ros : ros,
-    name : options['cmdVelTopic'],
-    messageType : 'geometry_msgs/Twist'
+    ros: ros,
+    name: options['cmdVelTopic'],
+    messageType: 'geometry_msgs/Twist'
 });
 
 function pubCmdVel() {
@@ -342,42 +380,42 @@ function pubCmdVel() {
     vz = Math.min(Math.abs(vz), options['maxAngularSpeed']) * sign(vz);
 
     var cmdVelMsg = new ROSLIB.Message({
-	linear : {
-	    x : vx,
-	    y : 0.0,
-	    z : 0.0
-	},
-	angular : {
-	    x : 0.0,
-	    y : 0.0,
-	    z : vz
-	}
+        linear: {
+            x: vx,
+            y: 0.0,
+            z: 0.0
+        },
+        angular: {
+            x: 0.0,
+            y: 0.0,
+            z: vz
+        }
     });
 
     cmdVelPub.publish(cmdVelMsg);
 
     updateCmdVelMarker();
 
-    writeMessageById("baseMessages", " vx: " + Math.round(vx * 100)/100 + ", vz: " + Math.round(vz*100)/100);
+    writeMessageById("baseMessages", " vx: " + Math.round(vx * 100) / 100 + ", vz: " + Math.round(vz * 100) / 100);
 }
 
 // Base speed control using the keyboard or mouse
 function setSpeed(code) {
     // Stop if the deadman key (Shift) is not depressed
     if (!shiftKey) {
-	stopRobot();
-	return;
+        stopRobot();
+        return;
     }
 
     // Use space bar to stop
     if (code == 32) {
         // Space bar
-	vx = 0;
-	vz = 0;
+        vx = 0;
+        vz = 0;
     }
     else if (code == "left" || code == 37 || code == 65) {
         // Left arrow or "a"
-	vz += options['vzKeyIncrement'];
+        vz += options['vzKeyIncrement'];
     }
     else if (code == 'forward' || code == 38 || code == 87) {
         // Up arrow or "w"
@@ -385,11 +423,11 @@ function setSpeed(code) {
     }
     else if (code == 'right' || code == 39 || code == 68) {
         // Right arrow or "d"
-	vz -= options['vzKeyIncrement'];
+        vz -= options['vzKeyIncrement'];
     }
     else if (code == 'backward' || code == 40 || code == 88) {
         // Down arrow or "x"
-	vx -= options['vxKeyIncrement'];
+        vx -= options['vxKeyIncrement'];
     }
 }
 
@@ -420,7 +458,7 @@ function updateBasePadMarker(vx, vz) {
     basePadMarker.setX(markerX);
     basePadMarker.setY(markerY);
     baseMarkerLayer.draw();
-    writeMessageById("baseMessages", " vx: " + Math.round(vx * 100)/100 + ", vz: " + Math.round(vz*100)/100);
+    writeMessageById("baseMessages", " vx: " + Math.round(vx * 100) / 100 + ", vz: " + Math.round(vz * 100) / 100);
 }
 
 function updateCmdVelMarker() {
@@ -429,7 +467,7 @@ function updateCmdVelMarker() {
 
     if (vx == 0 && vz == 0) y = videoStageHeight;
 
-    cmdVelMarker.setPoints([videoStageWidth/2, videoStageHeight, x, y]);
+    cmdVelMarker.setPoints([videoStageWidth / 2, videoStageHeight, x, y]);
 
     // videoMarkerLayer.draw();
 }
@@ -438,11 +476,11 @@ function getParam(param) {
     var paramValueResult = document.getElementById('getParamResult');
 
     var request = new ROSLIB.ServiceRequest({
-    	name: param,
+        name: param,
         default: ''
     });
-    getParamService.callService(request, function(result) {
-    	paramValueResult.innerHTML = result.value;
+    getParamService.callService(request, function (result) {
+        paramValueResult.innerHTML = result.value;
     });
 }
 
@@ -450,15 +488,15 @@ function setParam() {
     var item = $('#setParamListPullDown').jqxDropDownList('getItem', args.index);
     var paramValue = document.getElementById('setParamValue');
     var param = new ROSLIB.Param({
-		ros : ros,
-		name : item.label
+        ros: ros,
+        name: item.label
     });
-    
+
     if (isNumeric(paramValue.value)) {
-		param.set(parseFloat(paramValue.value));
+        param.set(parseFloat(paramValue.value));
     }
     else {
-    	param.set(paramValue.value);
+        param.set(paramValue.value);
     }
 }
 
@@ -466,8 +504,8 @@ function setGUIParam() {
     var paramName = document.getElementById('setParamName');
     var paramValue = document.getElementById('setParamValue');
     var param = new ROSLIB.Param({
-		ros : ros,
-		name : param_ns + '/' + paramName.value
+        ros: ros,
+        name: param_ns + '/' + paramName.value
     });
     param.set(paramValue.value);
 }
@@ -476,18 +514,18 @@ function getGUIParam() {
     var paramName = document.getElementById('getParamName');
     var paramValue = document.getElementById('getParamValue');
     var param = new ROSLIB.Param({
-		ros : ros,
-		name : param_ns + '/' + paramName.value
+        ros: ros,
+        name: param_ns + '/' + paramName.value
     });
-    param.get(function(value) {
-    	paramValue.value = value;
+    param.get(function (value) {
+        paramValue.value = value;
     });
 }
 
 var topicTypeClient = new ROSLIB.Service({
-    ros : ros,
-    name : '/rosapi/topic_type',
-    serviceType : 'rosapi/TopicType'
+    ros: ros,
+    name: '/rosapi/topic_type',
+    serviceType: 'rosapi/TopicType'
 });
 
 
@@ -497,44 +535,44 @@ var topicTypeClient = new ROSLIB.Service({
 // with a function argument that populates the desired pulldown list
 // with the returned list of topics.
 function loadTopics() {
-    ros.getTopics(function(topics) {
-	$("#topicListPullDown").jqxDropDownList({ source: topics, selectedIndex: -1, width: '300', height: '25', theme: 'ui-start', placeHolder: "Select Topic" });
-	$('#topicListPullDown').on('select', function (event) {
-	    var args = event.args;
-	    var topicType;
-	    var topicTypeLabel = document.getElementById('topicType');
-	    var item = $('#topicListPullDown').jqxDropDownList('getItem', args.index);
-/*
-	    if (item != null) {
-		topicTypeLabel.innerHTML = item.value
-		});
-	    }
+    ros.getTopics(function (topics) {
+        $("#topicListPullDown").jqxDropDownList({ source: topics, selectedIndex: -1, width: '300', height: '25', theme: 'shinyblack', placeHolder: "Select Topic" });
+        $('#topicListPullDown').on('select', function (event) {
+            var args = event.args;
+            var topicType;
+            var topicTypeLabel = document.getElementById('topicType');
+            var item = $('#topicListPullDown').jqxDropDownList('getItem', args.index);
+            /*
+                    if (item != null) {
+                    topicTypeLabel.innerHTML = item.value
+                    });
+                    }
+            
+                    function callback(result) {
+                        topicTypeLabel.value = result.type; 
+                    }
+            */
 
-	    function callback(result) {
-	    	topicTypeLabel.value = result.type; 
-	    }
-*/
-
-	});
+        });
     });
 }
 
 function loadParamNames() {
-    ros.getParams(function(params) {
-	$("#getParamListPullDown").jqxDropDownList({ source: params, selectedIndex: -1, width: '300', height: '25', theme: 'ui-start', placeHolder: "Select Parameter" });
-	$('#getParamListPullDown').on('select', function (event) {
-	    var args = event.args;
-	    var item = $('#getParamListPullDown').jqxDropDownList('getItem', args.index);
-	    if (item != null) {
-	    	getParam(item.label);
-	    }
-	});
+    ros.getParams(function (params) {
+        $("#getParamListPullDown").jqxDropDownList({ source: params, selectedIndex: -1, width: '300', height: '25', theme: 'shinyblack', placeHolder: "Select Parameter" });
+        $('#getParamListPullDown').on('select', function (event) {
+            var args = event.args;
+            var item = $('#getParamListPullDown').jqxDropDownList('getItem', args.index);
+            if (item != null) {
+                getParam(item.label);
+            }
+        });
 
-	$("#setParamListPullDown").jqxDropDownList({ source: params, selectedIndex: -1, width: '300', height: '25', theme: 'ui-start', placeHolder: "Select Parameter" });
-	$('#setParamListPullDown').on('select', function (event) {
-	    var args = event.args;
-	    var item = $('#setParamListPullDown').jqxDropDownList('getItem', args.index);	    
-	});
+        $("#setParamListPullDown").jqxDropDownList({ source: params, selectedIndex: -1, width: '300', height: '25', theme: 'shinyblack', placeHolder: "Select Parameter" });
+        $('#setParamListPullDown').on('select', function (event) {
+            var args = event.args;
+            var item = $('#setParamListPullDown').jqxDropDownList('getItem', args.index);
+        });
     });
 }
 
@@ -542,14 +580,14 @@ function pubChatter(rate) {
     var message = document.getElementById('chatterMessage');
 
     var chatter = new ROSLIB.Topic({
-    	ros : ros,
-    	name : '/chatter',
-    	messageType : 'std_msgs/String',
-    	throttle_rate: 1
+        ros: ros,
+        name: '/chatter',
+        messageType: 'std_msgs/String',
+        throttle_rate: 1
     });
 
     var msg = new ROSLIB.Message({
-    	data : message.value
+        data: message.value
     });
 
     chatter.publish(msg);
@@ -559,22 +597,22 @@ function subChatter() {
     var subscribe = $("#subChatterButton").jqxToggleButton('toggled');
     var chatterData = document.getElementById('chatterData');
     var listener = new ROSLIB.Topic({
-		ros : ros,
-		name : '/chatter',
-		messageType : 'std_msgs/String'
+        ros: ros,
+        name: '/chatter',
+        messageType: 'std_msgs/String'
     });
 
     if (subscribe) {
-		console.log('Subscribed to ' + listener.name);
-		chatterSubscribed = true;
-		listener.subscribe(function(msg) {
-		    chatterData.innerHTML = msg.data;
-		});
+        console.log('Subscribed to ' + listener.name);
+        chatterSubscribed = true;
+        listener.subscribe(function (msg) {
+            chatterData.innerHTML = msg.data;
+        });
     }
     else {
-		listener.unsubscribe();
-		chatterSubscribed = false;
-		console.log('Unsubscribed from ' + listener.name);
+        listener.unsubscribe();
+        chatterSubscribed = false;
+        console.log('Unsubscribed from ' + listener.name);
     }
 }
 
@@ -595,8 +633,7 @@ function sleep(delay) {
     while (new Date().getTime() < start + delay);
 }
 
-function sign(x)
-{
+function sign(x) {
     if (x < 0) { return -1; }
     if (x > 0) { return 1; }
     return 0;
@@ -604,5 +641,5 @@ function sign(x)
 
 
 function isNumeric(n) {
-  return !isNaN(parseFloat(n)) && isFinite(n);
+    return !isNaN(parseFloat(n)) && isFinite(n);
 }

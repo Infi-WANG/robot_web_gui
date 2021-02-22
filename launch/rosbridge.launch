@@ -13,6 +13,15 @@
   </node>
 
   <node name="robot_pose_publisher" pkg="robot_pose_publisher" type="robot_pose_publisher" output="screen" />
+
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
+  </node>
+
+  <!--node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+  </node-->
+
+  <node name="tf2_web_republisher" pkg="tf2_web_republisher" type="tf2_web_republisher">
+  </node>
   
   <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" />
   
