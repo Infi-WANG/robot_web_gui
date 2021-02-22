@@ -104,8 +104,8 @@ _**Remember**_ the port number you end up using as we will need it below.
 
 4- Using your pc or mobile or tablet browser, simply type the IP address or host name into the URL bar.
 Make sure to include any necessary ports or paths required to view your website.
-> e.g.	<http://localhost:8085/robot_gui.html>
-> e.g.	<http://localhost:8085/simple_gui.html>
+> e.g.	<http://localhost:8864/robot_gui.html>
+> e.g.	<http://localhost:8864/simple_gui.html>
 
 **Note:**   
 > - you can change the port number as you want,edit   
