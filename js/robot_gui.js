@@ -72,15 +72,6 @@ var options = {
     vzKeyIncrement: 0.05,
     deadZoneVz: 0.2,
 
-    // Battery topics
-    //laptopBatteryTopic: '/laptop_charge',
-
-    // Use this topic for the fake battery
-    //robotBatteryTopic: '/battery_level',
-
-    // Use a topic like this for a real battery
-    //robotBatteryTopic: '/arduino/sensor/main_voltage',
-
     // Video parameters
     videoTopic: '/camera/rgb/image_raw',
     videoQuality: 50,
@@ -238,9 +229,6 @@ ros.on('connection', function () {
         }
     }, true);
 
-    // Start subscribers
-    startSubscribers();
-
     // Start the publisher loop
     pubLoop();
 });
@@ -271,103 +259,6 @@ function connectServer() {
         console.write(error);
     }
 }
-
-function startSubscribers() {
-    // Subscribe to the robot battery topic
-
-    // Use for fake battery level published on /battery_level
-    /*
-    var subRobotBattery = new ROSLIB.Topic({
-        ros: ros,
-        name: options['robotBatteryTopic'],
-        messageType: 'std_msgs/Float32',
-        throttle_rate: 5000 // milliseconds
-    });
-
-    subRobotBattery.subscribe(function (msg) {
-        var color = getBatteryColor(msg.data);
-        $("#robotBatteryGauge").jqxLinearGauge({
-            value: msg.data,
-            pointer: { size: '20%', style: { fill: color } }
-        });
-    });
-    */
-
-
-    // Use for Phidgets battery sensor
-    /*
-    var subRobotBattery = new ROSLIB.Topic({
-        ros: ros,
-        name: options['robotBatteryTopic'],
-        messageType: 'ros_arduino_bridge/AnalogFloat64',
-        throttle_rate: 5000 // milliseconds
-    });
-
-    subRobotBattery.subscribe(function (msg) {
-        var voltage = msg.value;
-        var percentage = 100 * (voltage - 12.5) / (14.0 - 12.5);
-        var color = getBatteryColor(percentage);
-        $("#robotBatteryGauge").jqxLinearGauge({ value: percentage, pointer: { size: '20%', style: { fill: color } } });
-    });
-    */
-
-    /*
-    console.log('Subscribed to ' + options['robotBatteryTopic']);
-
-    // Subscribe to the laptop battery topic
-    var subLaptopBattery = new ROSLIB.Topic({
-        ros: ros,
-        name: options['laptopBatteryTopic'],
-        messageType: 'linux_hardware/LaptopChargeStatus',
-        throttle_rate: 5000 // milliseconds
-    });
-
-    subLaptopBattery.subscribe(function (msg) {
-        var color = getBatteryColor(msg.percentage);
-        $("#laptopBatteryGauge").jqxLinearGauge({ value: msg.percentage, pointer: { size: '20%', style: { fill: color } } });
-    });
-
-    console.log('Subscribed to ' + options['laptopBatteryTopic']);
-    */
-}
-
-/*
-function getBatteryColor(value) {
-    if (value >= 0 && value <= 30) return '#FF0000';
-    if (value > 30 && value <= 50) return '#FFFF00';
-    if (value > 50) return '#00FF00';
-}
-*/
-
-//Did not realise
-/*var jointStatePub=new ROSLIB.Topic({
-    ros:ros,
-    name:'/joint_states',
-    messageType:'sensor_msgs/JointState'
-});
-
-function pubJointState(){
-    var jointStateMsg = new ROSLIB.Message({
-        header: {
-            seq: 0,
-            stamp: 0,
-            frame_id: fixed_frame
-        },
-        name:[
-            'gripper',
-            'gripper_sub',
-            'joint1',
-            'joint2',
-            'joint3',
-            'joint4'
-        ],
-        position:[0,0,1,0,0,0],
-        velocity:[0.5,0.5,0.5,0.5,0.5,0.5],
-        effort:[]
-    });
-
-    jointStatePub.publish(jointStateMsg);
-}*/
 
 var cmdVelPub = new ROSLIB.Topic({
     ros: ros,

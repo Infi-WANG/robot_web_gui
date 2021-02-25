@@ -21,36 +21,6 @@
     }
   });
 
-  // Robot battery gauge
-  /*
-  $('#robotBatteryGauge').jqxLinearGauge({
-    theme: 'shinyblack',
-    orientation: 'horizontal',
-    width: 250,
-    height: 50,
-    labels: { interval: 10, position: 'far' },
-    ticksMajor: { size: '10%', interval: 10, position: 'far' },
-    ticksMinor: { visible: false },
-    max: 100,
-    min: 0,
-    pointer: { size: '20%', style: { fill: '#00FF00' } }
-  });
-
-  // Laptop battery gauge
-  $('#laptopBatteryGauge').jqxLinearGauge({
-    theme: 'shinyblack',
-    orientation: 'horizontal',
-    width: 250,
-    height: 50,
-    labels: { interval: 10, position: 'far' },
-    ticksMajor: { size: '10%', interval: 10, position: 'far' },
-    ticksMinor: { visible: false },
-    max: 100,
-    min: 0,
-    pointer: { size: '20%', style: { fill: '#00FF00' } }
-  });
-  */
-
   // Begin KineticJS scripts and parameters
   var basePadWidth = 300;
   var basePadHeight = 300;
@@ -187,20 +157,22 @@
     element.style.color = color;
   }
 
+  var i = 0.55;
+  // Create the main viewer.
+  var viewer = new ROS3D.Viewer({
+    divID: 'urdf',
+    width: this.window.innerWidth * i,
+    height: this.window.innerWidth * i * 0.84,
+    antialias: true
+  });
+
+  setTimeout(init_urdf, 500);
+
   //Setup all visualization elements when the page is loaded.
-  function init() {
+  function init_urdf() {
     // Connect to ROS.
     var ros = new ROSLIB.Ros({
       url: 'ws://localhost:9090'
-    });
-
-    // Create the main viewer.
-    var viewer = new ROS3D.Viewer({
-      divID: 'urdf',
-      width: 600,
-      height: 425,
-      antialias: true,
-      fixedFrame: 'odom'
     });
 
     // Add a grid.
@@ -214,7 +186,8 @@
       ros: ros,
       angularThres: 0.01,
       transThres: 0.01,
-      rate: 10.0
+      rate: 10.0,
+      //fixedFrame : 'odom'
     });
 
     // Setup the URDF client.
@@ -224,21 +197,16 @@
       tfClient: tfClient,
       path: 'http://10.13.0.165/',
       rootObject: viewer.scene,
-      loader: ROS3D.COLLADA_LOADER
+      loader: THREE.COLLADA_LOADER
     });
-
-    /*var jsp = new JOINTSTATEPUBLISHER.JointStatePublisher({
-      ros : ros,
-      divID : 'sliders'
-    });*/
-
   }
+
 </script>
 
 <!-- Wrap the whole layout in a table -->
 <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:0px;" rules="all">
   <tr>
-    <td style="background-color: rgb(36, 33, 28); vertical-align:top;" colspan="2">
+    <td style="background-color: rgb(36, 33, 28); vertical-align:top;" colspan="3">
       <div style="text-align: center; margin-left:0px; margin-top:5px; color: rgb(255, 255, 255); height: 35px;">
         Hostname or IP: <input type="text" id="rosbridgeHost" value="" size="8">&nbsp;
         Port: <input type="text" id="rosbridgePort" value="" size="5">&nbsp;
@@ -247,20 +215,38 @@
     </td>
   </tr>
 
-  <!-- 3D model and Video -->
+  <!-- 3D model -->
   <tr>
-    <td style="background-color: rgb(203, 203, 203);vertical-align: top; width: 50%;" onload="init()">
-      <div id="urdf" style="text-align:center; margin-top:35px; position:relative; display:block;"></div>
-    </td>
-    <td style="background-color: rgb(203, 203, 203); vertical-align: top; width: 50%;">
-      <!--div id="videoMessages" style="height:35px; margin-left:40px;"></div-->
-      <!--div id="videoCanvas" style="text-align:center; margin-left:15px; position:relative; display:block;"></div-->
+    <td style="background-color: rgb(203, 203, 203);vertical-align: top; width: 55%;" rowspan="3">
+      <div id="urdf" style="text-align:center; margin-top:0px; position:relative; display:block;"></div>
     </td>
   </tr>
 
   <!-- Right Panel: Base control and speed settings -->
   <tr>
-    <td style="background-color: rgb(203, 203, 203); vertical-align: top; width: 50%;">
+    <td style="background-color: rgb(203, 203, 203); vertical-align: top; width: 20%; text-align: center;">
+      <style>
+        .button1 {
+          -webkit-transition-duration: 0.4s;
+          transition-duration: 0.4s;
+          padding: 16px 32px;
+          text-align: center;
+          background-color: #4CAF50;
+          color: rgb(255, 255, 255);
+          border: 2px solid #4CAF50;
+          border-radius: 5px;
+        }
+
+        .button1:hover {
+          background-color: #4a9c4d;
+          color: white;
+        }
+      </style>
+      <a href="http://localhost:8000/rwt_moveit/" target="_blank">
+        <button class="button1" style="margin-top: 10px;">Web Robot Controller</button>
+      </a>
+    </td>
+    <td style="background-color: rgb(203, 203, 203); vertical-align: top; width: 25%;">
       <div id="baseMessages" style="text-align: center; height:35px; margin-top: 10px;"></div>
       <div id="baseContainer" style="text-align: center;"></div>
       <div style="text-align: center; margin-left: 10px;">
@@ -274,65 +260,17 @@
           onChange="maxAngularSpeedDisplay.value=this.value;setMaxAngularSpeed(this.value);"
           onInput="maxAngularSpeedDisplay.value=this.value;setMaxAngularSpeed(this.value);" type="range">&nbsp;<output
           id="maxAngularSpeedDisplay">1.2</output>
-      </div>
-    </td>
-    <td style="background-color: rgb(203, 203, 203); vertical-align: top; width: 50%;" onload="init()">
-      <div style="text-align: center; margin-top: 10px;">
-        TBD
-        <!--div id="sliders" style="text-align:center; margin-top:35px; position:relative; display:block; margin-right: 35px; margin-bottom: 35px;"></div-->
-      </div>
     </td>
   </tr>
 
-
-
-  <!-- Battery and servo status -->
-  <!--fieldset-->
-  <!--legend>Robot Status</legend> -->
-  <!--
-        <table border="0" cellpadding="0" cellspacing="0" style="width:100%; vertical-align:top; text-align:center;">
-          <tr>
-            <td style="text-align:right;vertical-align:top;">
-              <span id="robotBatteryGauge"></span>
-              <span id="robotReharging">&nbsp;</span>
-            </td>
-            <td style="font-size:14pt;text-align:left;">Robot Battery</td>
-          </tr>
-          <tr>
-            <td style="text-align:right;vertical-align:top;">
-              <span id="laptopBatteryGauge"></span>
-              <span id="laptopCharging">&nbsp;</span>
-            </td>
-            <td style="font-size:14pt;text-align:left;">Laptop Battery</td>
-          </tr>
-        </table>
-      </fieldset>
-  -->
-
-  <!--
-      <fieldset>
-        <legend>Head Pan/Tilt</legend>
-        <table style="border:0pt none ; text-align:left; margin-left:auto; margin-right:auto;">
-          <tbody>
-            <tr>
-            <tr>
-              <td valign="top" style="text-align:center;"><span style="font-weight:bold;">Pan: <output
-                    id="panSliderSisplay">0.0</output></span></td>
-              <td colspan="3" valign="top"><input id="panSlider" min="-3.0" max="3.0" step="0.05" value="0.0"
-                  onChange="panSliderDisplay.value=this.value;setPan(this.value);" type="range">
-                <p>
-              </td>
-            </tr>
-            <tr>
-              <td style="text-align:center;"><input class="centerServos" value="Center" onclick="centerHeadServos();"
-                  type="button"></td>
-              <td><input class="relaxServos" value="Relax" onclick="relaxAllServos();" type="button"></td>
-              <td><input class="driveView" value="Drive View" onclick="drivePanTilt();" type="button"></td>
-            </tr>
-          </tbody>
-        </table>
-      </fieldset>
-  -->
+  <!-- Video -->
+  <tr>
+    <td style="background-color: rgb(203, 203, 203); vertical-align: top; width: 45%;" colspan="2">
+      <div id="videoMessages" style="height:35px; margin-left:40px;"></div>
+      <div id="videoCanvas" style="text-align:center; margin-left:15px; position:relative; display:block;"></div>
+      </div>
+    </td>
+  </tr>
 
 </table>
 

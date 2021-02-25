@@ -35,3 +35,9 @@ https://my.oschina.net/alphazou/blog/3099905
 
 2月22日
 注释掉了 joint_state_publisher 节点避免模型抽搐，原因未知
+
+2月24日
+整合了与rwt_moveit的节点
+
+2月25日
+修改了页面布局
